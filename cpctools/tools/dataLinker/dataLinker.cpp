@@ -127,8 +127,8 @@ void saveFile()
 
 struct SOption appliOption[]=
 {
-	{'z',(char *)"zone",1,0,4,(char *)"Define a zone named $1 in bank $2 from $3 to $4"},
-	{'d',(char *)"dataFilename",1,0,3,(char *)"Load a data file $1 with label $2 and mask $3 to be linked"},
+	{'z',(char *)"zone",0,0,4,(char *)"Define a zone named $1 in bank $2 from $3 to $4"},
+	{'d',(char *)"dataFilename",0,0,3,(char *)"Load a data file $1 with label $2 and mask $3 to be linked"},
 	{'o',(char *)"output",0,1,1,(char *)"Z80 output filename"},
 	{'c',(char *)"configFile",0,1,1,(char *)"Configuration file"},
 	{0,NULL,0,0,0,NULL}
