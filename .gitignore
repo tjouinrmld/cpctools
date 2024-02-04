@@ -9,3 +9,6 @@ libstsound/Release/*
 *.suo
 *.swp
 Reloaded/build/*
+build/
+*/.vs/
+*/CMakeSettings.json
