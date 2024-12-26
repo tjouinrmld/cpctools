@@ -39,4 +39,6 @@ set_target_properties(cpcVideo PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(cpcVideo PROPERTIES COMPILE_DEFINITIONS NO_Z80)
 set_target_properties(cpcVideo PROPERTIES COMPILE_FLAGS "-Wall -Wno-multichar -O3")
 
+copy_dlls (cpcVideo)
+
 target_link_libraries(cpcVideo ${SDL_LIBRARY} tools TinyPTC lua)

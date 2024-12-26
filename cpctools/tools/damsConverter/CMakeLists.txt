@@ -2,6 +2,8 @@ add_executable (damsConverter
 	damsConverter.cpp
 )
 
+copy_dlls (damsConverter)
+
 target_link_libraries (damsConverter cpc tools)
 
 set(CXXFLAGS -Wall -O3)

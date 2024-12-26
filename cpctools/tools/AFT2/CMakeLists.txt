@@ -21,4 +21,5 @@ add_executable(aft2
 )
 
 target_link_libraries(aft2 cpc tools)
+copy_dlls (aft2)
 install(TARGETS aft2 RUNTIME DESTINATION bin)

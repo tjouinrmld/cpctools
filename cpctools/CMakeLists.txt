@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.0)
 include(CheckIncludeFileCXX)
 include(CheckCCompilerFlag)
 include(cmake/CheckSharedLibraryExists.cmake)
+include(cmake/CopyDlls.cmake)
 
 
 if (MSVC)
