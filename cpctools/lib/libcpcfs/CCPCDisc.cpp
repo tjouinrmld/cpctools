@@ -536,11 +536,19 @@ void CCPCDisc::readDirectory()
 		name.System = ((name.Name[9] & 128) != 0);
 
 		bool validName = true;
+		bool validNameHasOneChar = false;
 
 		// clean name
-		for (unsigned int i=0;i<11;i++)
-			validName = validName && ((name.Name[i] & 127)>=' ')
-				&& (name.Name[i]!=(char)CCPCDisc::DeleteUser);
+		for (unsigned int i = 0; i < 11; i++)
+		{
+			validName = validName && ((name.Name[i] & 127) >= ' ') && (name.Name[i] != (char)CCPCDisc::DeleteUser);
+			if ((name.Name[i] & 127) != ' ')
+			{
+				validNameHasOneChar = true;
+			}
+		}
+
+		validName = validName && validNameHasOneChar;
 
 		if (validName)
 		{
@@ -1424,17 +1432,14 @@ CCPCDisc::TDisc CCPCDisc::guessGeometry(const string &i_filename,
 		switch(isFloppy(i_filename))
 		{
 		    case 1:
-				format = guessFloppyGeometry(driver, geometry, needAdvancedMode,
-					interlaced, extendedGuess);
+				format = guessFloppyGeometry(driver, geometry, needAdvancedMode, interlaced, extendedGuess);
 			break;
 		    case 0:
 		    default:
-				format = guessDSKGeometry(i_filename, geometry,
-					needAdvancedMode, interlaced, extendedGuess);
+				format = guessDSKGeometry(i_filename, geometry, needAdvancedMode, interlaced, extendedGuess);
 			break;
 		    case 2:
-				format = guessRAWGeometry(i_filename, geometry,
-					needAdvancedMode, interlaced, extendedGuess);
+				format = guessRAWGeometry(i_filename, geometry, needAdvancedMode, interlaced, extendedGuess);
 			break;
 		}
 
@@ -1593,31 +1598,9 @@ CCPCDisc::TDisc CCPCDisc::guessDSKGeometry(const string &i_filename, DSK_GEOMETR
 		oldID = (*it);
 	}
 
-	// Now check all track to have same sector header as first one
-	bool trackAreSame = true;
-	for (unsigned int t=1 ; t<geometry.dg_cylinders ; t++)
-	{
-		CDSKTrack *track = dskFile->GetTrack(t, 0);
-		if (! track->SameHeader(*firstTrack) )
-		{
-			trackAreSame = false;
-			sectorID.clear();
-			sectorsHasSameSize = true;
-			for (int s=0 ; s<track->NbSector ; s++)
-			{
-				sectorID.insert(track->Sectors[0].SectorID);
-				sectorsHasSameSize = sectorsHasSameSize &&
-					(track->Sectors[0].SectorSize == track->Sectors[s].SectorSize);
-			}
-			if (!sectorsHasSameSize || (sectorID.size() != track->NbSector) )
-			{
-				needAdvancedMode = true;
-				return Unknown;
-			}
-		}
-	}
+	needAdvancedMode = !validSectorOrder;
 
-	if (!trackAreSame || !validSectorOrder || needAdvancedMode)
+	if (needAdvancedMode)
 		return Unknown;
 
 	// We have normal track
@@ -1674,6 +1657,16 @@ CCPCDisc::TDisc CCPCDisc::guessDSKGeometry(const string &i_filename, DSK_GEOMETR
 		}
 	}
 
+	// Now check all track to have same sector header as first one
+	for (unsigned int t=1 ; t<geometry.dg_cylinders ; t++)
+	{
+		CDSKTrack *track = dskFile->GetTrack(t, 0);
+		if (! track->SameHeader(*firstTrack) )
+		{
+			needAdvancedMode = true;
+			break;
+		}
+	}
 
 	return format;
 }
@@ -1847,8 +1840,7 @@ CCPCDisc* CCPCDisc::OpenDisc(const string &i_filename, int i_inside)
 	bool needAdvancedMode;
 	bool interlaced;
 
-	format = guessGeometry(i_filename, driver, geometry, needAdvancedMode,
-		interlaced);
+	format = guessGeometry(i_filename, driver, geometry, needAdvancedMode, interlaced);
 
 	TOOLS_ASSERTMSG( (format != -1) , "Error opening dsk : unknown geometry");
 
@@ -1857,8 +1849,7 @@ CCPCDisc* CCPCDisc::OpenDisc(const string &i_filename, int i_inside)
 	    case RomdosD1:
 		{
 		    disc = new CCPCRomdosD1Disc;
-		    disc->Open(i_filename, driver, geometry, format, needAdvancedMode,
-		    	interlaced);
+		    disc->Open(i_filename, driver, geometry, format, needAdvancedMode, interlaced);
 		    disc->readDirectory();
 		    break;
 		}
@@ -1874,16 +1865,14 @@ CCPCDisc* CCPCDisc::OpenDisc(const string &i_filename, int i_inside)
 	    case System42:
 		{
 		    disc = new CCPCSystemDisc;
-		    disc->Open(i_filename, driver, geometry, format, needAdvancedMode,
-		    	interlaced);
+		    disc->Open(i_filename, driver, geometry, format, needAdvancedMode, interlaced);
 		    disc->readDirectory();
 		    break;
 		}
 	    case Unknown:
 		{
 		    disc = new CCPCUnknownDisc;
-		    disc->Open(i_filename, driver, geometry, format, needAdvancedMode,
-		    	interlaced);
+		    disc->Open(i_filename, driver, geometry, format, needAdvancedMode, interlaced);
 		    break;
 		}
 	    default:
