@@ -541,7 +541,9 @@ void CCPCDisc::readDirectory()
 		// clean name
 		for (unsigned int i = 0; i < 11; i++)
 		{
-			validName = validName && ((name.Name[i] & 127) >= ' ') && (name.Name[i] != (char)CCPCDisc::DeleteUser);
+			validName = validName && ((name.Name[i] & 127) >= ' ') 
+				&& ((name.Name[i] & 127) != '.')
+				&& (name.Name[i] != (char)CCPCDisc::DeleteUser);
 			if ((name.Name[i] & 127) != ' ')
 			{
 				validNameHasOneChar = true;
